@@ -1,0 +1,19 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de entorno y credenciales (¡NUNCA subir a GitHub!)
+.env
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos Secure Connect Bundle si existieran
+*.zip
+
+# IDEs
+.vscode/
+.idea/

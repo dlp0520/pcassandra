@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica Cassandra en la Nube (DataStax Astra DB)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-area">
+                <span class="icon">⚡</span>
+                <div>
+                    <h1>Práctica Cassandra</h1>
+                    <p class="subtitle">DataStax Astra DB en la Nube + Python (Flask)</p>
+                </div>
+            </div>
+
+            <!-- Estado de Conexión -->
+            <div class="status-badge {% if is_connected %}connected{% else %}disconnected{% endif %}">
+                <span class="status-dot"></span>
+                <span class="status-text">
+                    {% if is_connected %}
+                        Conectado a Cassandra Astra DB (Keyspace: <strong>{{ keyspace }}</strong>)
+                    {% else %}
+                        Pendiente de credenciales en .env
+                    {% endif %}
+                </span>
+            </div>
+        </header>
+
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Aviso si no está conectado -->
+        {% if not is_connected %}
+            <div class="info-card warning">
+                <div class="info-header">
+                    <span class="info-icon">⚠️</span>
+                    <h3>Base de datos Cassandra no conectada</h3>
+                </div>
+                <p>{{ connection_error }}</p>
+                <form action="{{ url_for('reintentar_conexion') }}" method="POST" style="margin-top: 10px;">
+                    <button type="submit" class="btn btn-secondary btn-sm">🔄 Probar conexión nuevamente</button>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- Formulario Principal -->
+        <main class="main-card">
+            <h2>Registrar Nombre</h2>
+            <p class="form-desc">Ingresa un nombre para guardarlo directamente en tu base de datos Cassandra en la nube:</p>
+
+            <form action="{{ url_for('guardar') }}" method="POST" class="form-group">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        name="nombre" 
+                        id="nombre" 
+                        placeholder="Escribe un nombre aquí..." 
+                        required 
+                        autocomplete="off"
+                        autofocus
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span>Guardar Nombre</span>
+                    <span class="arrow">➜</span>
+                </button>
+            </form>
+        </main>
+
+        <!-- Lista de Nombres Registrados -->
+        <section class="records-card">
+            <div class="records-header">
+                <h3>Nombres Registrados en Cassandra</h3>
+                <span class="badge-count">{{ usuarios|length }} registros</span>
+            </div>
+
+            {% if usuarios and usuarios|length > 0 %}
+                <div class="table-responsive">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Fecha de Registro</th>
+                                <th>Origen</th>
+                                <th>ID del Documento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in usuarios %}
+                                <tr>
+                                    <td class="user-name"><strong>{{ u.nombre }}</strong></td>
+                                    <td class="text-muted">{{ u.fecha_creacion }}</td>
+                                    <td>
+                                        <span class="tag tag-success">
+                                            {{ u.origen }}
+                                        </span>
+                                    </td>
+                                    <td class="text-mono">{{ u.id }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No hay nombres registrados todavía. ¡Escribe el primero arriba!</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Información de Conexión Activa -->
+        <footer class="instructions-card">
+            <h4>☁️ Conexión DataStax Astra DB Activa</h4>
+            <p style="color: #475569; margin-bottom: 8px;">Tu aplicación está enlazada directamente con tu cluster Cassandra en la nube:</p>
+            <ul style="margin-left: 20px; color: #475569; display: flex; flex-direction: column; gap: 4px;">
+                <li><strong>Endpoint:</strong> <code>https://8ca7d5e5-9d86-4f65-8742-d37960272320-us-east-2.apps.astra.datastax.com</code></li>
+                <li><strong>Keyspace:</strong> <code>{{ keyspace }}</code></li>
+                <li><strong>Colección:</strong> <code>usuarios</code></li>
+            </ul>
+        </footer>
+    </div>
+</body>
+</html>
